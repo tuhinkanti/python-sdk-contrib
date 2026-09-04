@@ -1,0 +1,315 @@
+import { defineSoftwareMap } from "@dev.fast/progressive-review/software-map-model";
+
+export default defineSoftwareMap({
+  people: {
+    applicationDeveloper: {
+      label: "Application developer",
+      description: "Configures OpenFeature to use the flagd provider.",
+    },
+  },
+  systems: {
+    flagdProvider: {
+      label: "OpenFeature flagd provider",
+      description:
+        "Implements the OpenFeature provider and evaluates flags through remote or in-process flagd resolvers.",
+      changeStatus: "modified",
+      containers: {
+        providerApi: {
+          label: "Provider API",
+          description:
+            "Exposes the FlagdProvider constructor and selects the configured resolver.",
+          changeStatus: "modified",
+          components: {
+            entryPoint: {
+              label: "Provider entry point",
+              description:
+                "Creates the provider, passes configuration to the resolver, and forwards flag evaluations.",
+              changeStatus: "modified",
+              codeElements: {
+                constructor: {
+                  label: "FlagdProvider constructor",
+                  changeStatus: "modified",
+                  sourceRanges: [
+                    {
+                      file: "providers/openfeature-provider-flagd/src/openfeature/contrib/provider/flagd/provider.py",
+                      fromLine: 43,
+                      toLine: 120,
+                    },
+                  ],
+                },
+                resolverSetup: {
+                  label: "FlagdProvider.setup_resolver",
+                  sourceRanges: [
+                    {
+                      file: "providers/openfeature-provider-flagd/src/openfeature/contrib/provider/flagd/provider.py",
+                      fromLine: 128,
+                      toLine: 152,
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+        configuration: {
+          label: "Provider configuration",
+          description:
+            "Resolves environment and constructor options into a Config instance.",
+          changeStatus: "modified",
+          components: {
+            providerOptions: {
+              label: "Provider options",
+              description:
+                "Stores resolver, connection, retry, cache, and compatibility options.",
+              changeStatus: "modified",
+              codeElements: {
+                configConstructor: {
+                  label: "Config constructor",
+                  changeStatus: "modified",
+                  sourceRanges: [
+                    {
+                      file: "providers/openfeature-provider-flagd/src/openfeature/contrib/provider/flagd/config.py",
+                      fromLine: 98,
+                      toLine: 304,
+                    },
+                  ],
+                },
+              },
+            },
+            channelInterceptors: {
+              label: "gRPC client interceptors",
+              description:
+                "Wraps each channel with caller-provided synchronous gRPC client interceptors.",
+              changeStatus: "added",
+              codeElements: {
+                applyClientInterceptors: {
+                  label: "apply_client_interceptors",
+                  changeStatus: "added",
+                  sourceRanges: [
+                    {
+                      file: "providers/openfeature-provider-flagd/src/openfeature/contrib/provider/flagd/config.py",
+                      fromLine: 68,
+                      toLine: 74,
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+        evaluation: {
+          label: "Flag evaluation resolvers",
+          description:
+            "Provides remote evaluation and in-process flag synchronization.",
+          changeStatus: "modified",
+          components: {
+            rpcResolver: {
+              label: "RPC resolver",
+              description:
+                "Evaluates flags through the flagd evaluation service and listens for changes.",
+              changeStatus: "modified",
+              codeElements: {
+                channelFactory: {
+                  label: "RPC channel factory",
+                  changeStatus: "modified",
+                  sourceRanges: [
+                    {
+                      file: "providers/openfeature-provider-flagd/src/openfeature/contrib/provider/flagd/resolvers/grpc.py",
+                      fromLine: 85,
+                      toLine: 138,
+                    },
+                  ],
+                },
+                eventListener: {
+                  label: "Event stream listener",
+                  changeStatus: "modified",
+                  sourceRanges: [
+                    {
+                      file: "providers/openfeature-provider-flagd/src/openfeature/contrib/provider/flagd/resolvers/grpc.py",
+                      fromLine: 270,
+                      toLine: 298,
+                    },
+                  ],
+                },
+              },
+            },
+            inProcessResolver: {
+              label: "In-process resolver",
+              description:
+                "Evaluates synchronized flag definitions locally through the selected connector.",
+              codeElements: {
+                connectorSelection: {
+                  label: "Connector selection",
+                  sourceRanges: [
+                    {
+                      file: "providers/openfeature-provider-flagd/src/openfeature/contrib/provider/flagd/resolvers/in_process.py",
+                      fromLine: 39,
+                      toLine: 74,
+                    },
+                  ],
+                },
+              },
+            },
+            syncWatcher: {
+              label: "gRPC sync watcher",
+              description:
+                "Streams flag definitions from the flagd sync service into the local evaluator.",
+              changeStatus: "modified",
+              codeElements: {
+                channelFactory: {
+                  label: "Sync channel factory",
+                  changeStatus: "modified",
+                  sourceRanges: [
+                    {
+                      file: "providers/openfeature-provider-flagd/src/openfeature/contrib/provider/flagd/resolvers/process/connector/grpc_watcher.py",
+                      fromLine: 62,
+                      toLine: 125,
+                    },
+                  ],
+                },
+                syncFlagsListener: {
+                  label: "SyncFlags listener",
+                  changeStatus: "modified",
+                  sourceRanges: [
+                    {
+                      file: "providers/openfeature-provider-flagd/src/openfeature/contrib/provider/flagd/resolvers/process/connector/grpc_watcher.py",
+                      fromLine: 320,
+                      toLine: 328,
+                    },
+                  ],
+                },
+                syncFlagsAttempt: {
+                  label: "SyncFlags stream attempt",
+                  description:
+                    "Starts one sync stream, handles flag responses, and classifies stream errors.",
+                  changeStatus: "added",
+                  sourceRanges: [
+                    {
+                      file: "providers/openfeature-provider-flagd/src/openfeature/contrib/provider/flagd/resolvers/process/connector/grpc_watcher.py",
+                      fromLine: 296,
+                      toLine: 318,
+                    },
+                  ],
+                },
+              },
+            },
+            fileWatcher: {
+              label: "File watcher",
+              description:
+                "Polls an offline flag file and updates the local evaluator.",
+              codeElements: {
+                filePolling: {
+                  label: "File polling and reload",
+                  sourceRanges: [
+                    {
+                      file: "providers/openfeature-provider-flagd/src/openfeature/contrib/provider/flagd/resolvers/process/connector/file_watcher.py",
+                      fromLine: 22,
+                      toLine: 118,
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    openFeatureSdk: {
+      label: "OpenFeature Python SDK",
+      description: "Provides the provider interface and evaluation context.",
+      external: true,
+    },
+    flagd: {
+      label: "flagd",
+      description:
+        "Provides remote flag evaluation and synchronized flag definitions.",
+      external: true,
+    },
+  },
+  relationships: [
+    {
+      kind: "semantic",
+      from: "applicationDeveloper",
+      to: "openFeatureSdk",
+      label: "Uses",
+    },
+    {
+      kind: "semantic",
+      from: "applicationDeveloper",
+      to: "flagdProvider.providerApi",
+      label: "Configures",
+    },
+    {
+      kind: "semantic",
+      from: "openFeatureSdk",
+      to: "flagdProvider.providerApi",
+      label: "Loads",
+    },
+    {
+      kind: "semantic",
+      from: "flagdProvider.providerApi",
+      to: "flagdProvider.configuration.providerOptions",
+      label: "Passes options",
+    },
+    {
+      kind: "semantic",
+      from: "flagdProvider.providerApi",
+      to: "flagdProvider.evaluation.rpcResolver",
+      label: "Selects remote resolver",
+    },
+    {
+      kind: "semantic",
+      from: "flagdProvider.providerApi",
+      to: "flagdProvider.evaluation.inProcessResolver",
+      label: "Selects in-process resolver",
+    },
+    {
+      kind: "semantic",
+      from: "flagdProvider.configuration.providerOptions",
+      to: "flagdProvider.evaluation.rpcResolver",
+      label: "Configures",
+    },
+    {
+      kind: "semantic",
+      from: "flagdProvider.configuration.providerOptions",
+      to: "flagdProvider.evaluation.syncWatcher",
+      label: "Configures",
+    },
+    {
+      kind: "semantic",
+      from: "flagdProvider.configuration.channelInterceptors",
+      to: "flagdProvider.evaluation.rpcResolver",
+      label: "Wraps the RPC channel",
+    },
+    {
+      kind: "semantic",
+      from: "flagdProvider.configuration.channelInterceptors",
+      to: "flagdProvider.evaluation.syncWatcher",
+      label: "Wraps the sync channel",
+    },
+    {
+      kind: "semantic",
+      from: "flagdProvider.evaluation.rpcResolver",
+      to: "flagd",
+      label: "Evaluates flags over gRPC",
+    },
+    {
+      kind: "semantic",
+      from: "flagdProvider.evaluation.syncWatcher",
+      to: "flagd",
+      label: "Streams flag definitions over gRPC",
+    },
+    {
+      kind: "semantic",
+      from: "flagdProvider.evaluation.inProcessResolver",
+      to: "flagdProvider.evaluation.syncWatcher",
+      label: "Receives synchronized flags from",
+    },
+    {
+      kind: "semantic",
+      from: "flagdProvider.evaluation.inProcessResolver",
+      to: "flagdProvider.evaluation.fileWatcher",
+      label: "Receives offline flags from",
+    },
+  ],
+});
